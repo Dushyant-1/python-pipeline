@@ -13,6 +13,11 @@ pipeline {
                 git branch: 'main', url: 'https://github.com/Dushyant-1/python-pipeline.git'
             }
         }
+         stage('Install Dependencies') {
+            steps {
+                sh 'pip install -r requirements.txt'
+            }
+        }
 
         stage('Set Up Python Environment') {
             steps {

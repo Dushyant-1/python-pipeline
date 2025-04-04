@@ -24,7 +24,11 @@ pipeline {
 
         stage('Deploy') {
             steps {
-                withCredentials([azureServicePrincipal(credentialsId: AZURE_CREDENTIALS_ID)]) {
+                withCredentials([
+                    string(credentialsId: 'azure-client-id', variable: 'AZURE_CLIENT_ID'),
+                    string(credentialsId: 'azure-client-secret', variable: 'AZURE_CLIENT_SECRET'),
+                    string(credentialsId: 'azure-tenant-id', variable: 'AZURE_TENANT_ID')
+                ]) {
                     bat '''
                     if exist publish (rmdir /s /q publish)
                     mkdir publish
@@ -34,9 +38,9 @@ pipeline {
                     if exist requirements.txt copy requirements.txt publish\\
                     '''
 
-                    bat 'az login --service-principal -u ${AZURE_CLIENT_ID} -p ${AZURE_CLIENT_SECRET} --tenant ${AZURE_TENANT_ID}'
+                    bat 'az login --service-principal -u %AZURE_CLIENT_ID% -p %AZURE_CLIENT_SECRET% --tenant %AZURE_TENANT_ID%'
                     bat 'powershell Compress-Archive -Path ./publish/* -DestinationPath ./publish.zip -Force'
-                    bat 'az webapp deploy --resource-group ${RESOURCE_GROUP} --name ${APP_SERVICE_NAME} --src-path ./publish.zip --type zip'
+                    bat 'az webapp deploy --resource-group %RESOURCE_GROUP% --name %APP_SERVICE_NAME% --src-path ./publish.zip --type zip'
                 }
             }
         }
